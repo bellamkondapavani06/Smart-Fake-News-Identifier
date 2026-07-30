@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Fake News Identifier - AI Fact Checker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<div class="app-wrapper">
+    <div class="container">
+        
+        <!-- Left Side: Visual Header & Branding -->
+        <div class="left">
+            <div class="image-overlay">
+                <div class="brand-badge"><i class="fa-solid fa-shield-halved"></i> AI Verifier</div>
+                {% if result %}
+                    {% if result.is_fake %}
+                        <img src="{{ url_for('static', filename='images/image.jpeg') }}" class="main-img" alt="Fake News Warning">
+                    {% else %}
+                        <img src="{{ url_for('static', filename='images/images.jpeg') }}" class="main-img" alt="Verified News">
+                    {% endif %}
+                {% else %}
+                    <img src="{{ url_for('static', filename='images/images.jpeg') }}" class="main-img" alt="Fake News Identifier">
+                {% endif %}
+                <div class="left-caption">
+                    <h3>Smart News Intelligence</h3>
+                    <p>Powered by RoBERTa Transformer & Gemini Fact Checking</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Form & Detailed Results -->
+        <div class="right">
+            
+            <header class="header">
+                <h1><i class="fa-newspaper fa-regular"></i> Smart Fake News Identifier</h1>
+                <p class="subtitle">Multi-Model Machine Learning & Real-Time Fact Verification</p>
+            </header>
+
+            {% if error %}
+                <div class="alert alert-error">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>{{ error }}</span>
+                </div>
+            {% endif %}
+
+            {% if result %}
+                <!-- Results View -->
+                <div class="result-box animate-fade-in">
+                    
+                    <div class="result-header">
+                        <span class="model-badge"><i class="fa-solid fa-microchip"></i> {{ result.model_type }}</span>
+                        
+                        {% if result.is_ai %}
+                            <div class="status-banner status-ai">
+                                <i class="fa-solid fa-robot"></i> {{ result.result }}
+                            </div>
+                        {% elif result.is_fake %}
+                            <div class="status-banner status-fake">
+                                <i class="fa-solid fa-circle-xmark"></i> {{ result.result }}
+                            </div>
+                        {% else %}
+                            <div class="status-banner status-real">
+                                <i class="fa-solid fa-circle-check"></i> {{ result.result }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Metric Cards -->
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <span class="metric-label">Model Confidence</span>
+                            <span class="metric-value">{{ result.confidence }}</span>
+                            <div class="confidence-bar-bg">
+                                <div class="confidence-bar-fill" style="width: {{ result.confidence_val }}%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Model Explanation -->
+                    {% if result.explanation %}
+                        <div class="info-card">
+                            <span class="card-title"><i class="fa-solid fa-lightbulb"></i> Analysis Explanation</span>
+                            <p class="explanation-text">{{ result.explanation }}</p>
+                        </div>
+                    {% endif %}
+
+                    <!-- Secondary Gemini Verification Card -->
+                    {% if result.gemini_verification %}
+                        <div class="gemini-card {% if result.gemini_verification.triggered %}gemini-active{% endif %}">
+                            <div class="gemini-header">
+                                <h3><i class="fa-solid fa-sparkles"></i> Gemini Secondary Verification</h3>
+                                {% if result.gemini_verification.triggered %}
+                                    <span class="tag tag-warning"><i class="fa-solid fa-bolt"></i> Auto-Triggered</span>
+                                {% else %}
+                                    <span class="tag tag-success"><i class="fa-solid fa-check"></i> High Confidence</span>
+                                {% endif %}
+                            </div>
+
+                            <p class="trigger-reason"><strong>Trigger Info:</strong> {{ result.gemini_verification.trigger_reason }}</p>
+
+                            <div class="gemini-body">
+                                {% if result.gemini_verification.triggered %}
+                                    <div class="gemini-status">
+                                        <strong>Fact Status:</strong> 
+                                        <span class="status-pill status-{{ result.gemini_verification.status | lower }}">
+                                            {{ result.gemini_verification.status }}
+                                        </span>
+                                    </div>
+                                    <div class="gemini-reason">
+                                        <strong>Reason & Evidence:</strong>
+                                        <p>{{ result.gemini_verification.reason }}</p>
+                                    </div>
+                                {% else %}
+                                    <p class="gemini-skipped-msg">{{ result.gemini_verification.reason }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <div class="action-bar">
+                        <a href="/" class="btn btn-secondary">
+                            <i class="fa-solid fa-rotate-left"></i> Check Another Article
+                        </a>
+                    </div>
+
+                </div>
+
+            {% else %}
+
+                <!-- Input Form View -->
+                <form method="POST" action="/" class="news-form">
+                    <div class="form-group">
+                        <label for="news_input">Paste Article or News Text</label>
+                        <textarea
+                            id="news_input"
+                            name="news"
+                            placeholder="Enter the news headline or article body text here to verify its authenticity..."
+                            required></textarea>
+                    </div>
+
+                    <div class="form-options">
+                        <label class="checkbox-container">
+                            <input type="checkbox" name="force_gemini" value="true">
+                            <span class="checkmark"></span>
+                            Force Gemini API Fact Check (Even if ML confidence is high)
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa-solid fa-magnifying-glass"></i> Analyze & Detect
+                    </button>
+                </form>
+
+            {% endif %}
+
+            <footer class="footer">
+                <p>Smart Fake News Identifier &copy; 2026 | Safe & Transparent News Verification</p>
+            </footer>
+
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

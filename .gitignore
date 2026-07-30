@@ -1,0 +1,24 @@
+# Environment variables
+.env
+.env.local
+
+# Python caches & virtual environment
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+
+# App logs
+*.log
+app.log
+
+# HuggingFace & PyTorch model cache
+.cache/
+huggingface/
+
+# IDE files
+.vscode/
+.idea/
