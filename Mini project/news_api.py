@@ -8,6 +8,7 @@ def get_client():
     return genai.Client(api_key=key)
 
 def verify_news(article):
+
     prompt = f"""
 You are an expert fact-checking assistant.
 
@@ -36,12 +37,16 @@ Confidence: <0-100>%
             model="gemini-flash-latest",
             contents=prompt
         )
+
         return response.text
 
     except Exception as e:
+
         return f"Gemini Error: {e}"
 
 
 if __name__ == "__main__":
+
     article = input("Enter News:\n")
+
     print(verify_news(article))

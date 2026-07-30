@@ -1,6 +1,7 @@
+import os
 import requests
 
-API_KEY = ""
+API_KEY = os.getenv("MEDIASTACK_API_KEY", "6b02a83483db1bcdf18aa7ad32ff605d")
 
 def fetch_news(query):
     url = "http://api.mediastack.com/v1/news"

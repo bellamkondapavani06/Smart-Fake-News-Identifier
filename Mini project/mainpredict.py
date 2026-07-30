@@ -1,49 +1,40 @@
-import joblib
-import re
-import string
+import sys
+import os
 
-# Load AI/Human model
-ai_model = joblib.load("ai_model.pkl")
-ai_vectorizer = joblib.load("ai_vectorizer.pkl")
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from services.predictor_service import PredictorService
 
-# Load Fake/True model
-news_model = joblib.load("model.pkl")
-news_vectorizer = joblib.load("vectorizer.pkl")
+def main():
+    service = PredictorService()
+    print("=" * 60)
+    print(" 📰 Smart Fake News Identifier - CLI Prediction Interface ")
+    print("=" * 60)
+    
+    news = input("\nEnter the news article text:\n\n").strip()
+    if not news:
+        print("Empty input provided.")
+        return
 
-# Text preprocessing
-def preprocess(text):
-    text = text.lower()
-    text = re.sub(r"http\S+|www\S+", "", text)
-    text = re.sub(r"\d+", "", text)
-    text = text.translate(str.maketrans("", "", string.punctuation))
-    return text
+    result = service.analyze_news(news)
+    
+    if not result["success"]:
+        print(f"\n❌ Error: {result['error']}")
+        return
 
-# Input
-news = input("Enter the news article:\n")
+    pred = result["prediction"]
+    print("\n" + "=" * 40)
+    print(f"Prediction       : {pred['result']}")
+    print(f"Confidence Score : {pred['confidence']}")
+    print(f"Model Type       : {pred['model_type']}")
+    print(f"Explanation      : {pred['explanation']}")
+    
+    gemini = pred.get("gemini_verification", {})
+    if gemini and gemini.get("triggered"):
+        print("\n--- Gemini Fact Checking Verification ---")
+        print(f"Trigger Reason   : {gemini.get('trigger_reason')}")
+        print(f"Fact Status      : {gemini.get('status')}")
+        print(f"Evidence/Reason  : {gemini.get('reason')}")
+    print("=" * 40)
 
-# Preprocess
-news = preprocess(news)
-
-# ---------- Step 1 : AI or Human ----------
-ai_vector = ai_vectorizer.transform([news])
-ai_prediction = ai_model.predict(ai_vector)
-
-# Change these labels according to your AI model
-# If AI model: 0 = Human, 1 = AI
-if ai_prediction[0] == 1:
-    print("\n🤖 AI Generated Content")
-
-else:
-    print("\n👤 Human Written Content")
-
-    # ---------- Step 2 : Fake or True ----------
-    news_vector = news_vectorizer.transform([news])
-    news_prediction = news_model.predict(news_vector)
-
-    # Fake/True labels
-    # 0 = Real
-    # 1 = Fake
-    if news_prediction[0] == 0:
-        print("✅ True News")
-    else:
-        print("❌ Fake News")
+if __name__ == "__main__":
+    main()
