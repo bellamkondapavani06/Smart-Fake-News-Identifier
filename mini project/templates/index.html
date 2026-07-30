@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Fake News Identifier</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- Left Side -->
+    <div class="left">
+
+        {% if result %}
+            <img src="{{ url_for('static', filename='image.jpeg') }}" class="main-img" alt="Result Image">
+        {% else %}
+            <img src="{{ url_for('static', filename='images.jpeg') }}" class="main-img" alt="Fake News Image">
+        {% endif %}
+
+    </div>
+
+    <!-- Right Side -->
+    <div class="right">
+
+        <h1>📰 Smart Fake News Identifier</h1>
+
+        {% if result %}
+
+        <div class="result-box">
+
+            <h2>Prediction Result</h2>
+
+            <h2>{{ result }}</h2>
+
+            {% if confidence %}
+                <h3>ML Model Confidence</h3>
+                <p>{{ confidence }}</p>
+            {% endif %}
+
+            {% if gemini_result %}
+            <hr>
+
+            <h2>Gemini Verification</h2>
+
+            <div class="gemini-box">
+                <pre>{{ gemini_result }}</pre>
+            </div>
+
+            {% endif %}
+
+            <br>
+
+            <a href="/">
+                <button>Check Another News</button>
+            </a>
+
+        </div>
+
+        {% else %}
+
+        <form method="POST">
+
+            <textarea
+                name="news"
+                placeholder="Paste your news article here..."
+                required></textarea>
+
+            <br><br>
+
+            <button type="submit">Predict</button>
+
+        </form>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+</body>
+</html>
