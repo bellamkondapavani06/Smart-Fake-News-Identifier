@@ -1,9 +1,16 @@
 from typing import Dict, Any
 from config import Config
 from utils.logger import logger
+from utils.constants import (
+    GEMINI_STATUS_VERIFIED,
+    GEMINI_STATUS_FALSE,
+    GEMINI_STATUS_UNVERIFIED,
+    GEMINI_STATUS_SKIPPED,
+    GEMINI_STATUS_ERROR
+)
 
 class GeminiService:
-    """Service wrapping Google Gemini API for news fact-checking and secondary verification."""
+    """Service wrapping Google Gemini API for fact-checking and news verification."""
 
     def __init__(self):
         self.api_key = Config.GEMINI_API_KEY
@@ -27,12 +34,13 @@ class GeminiService:
 
     def verify_news(self, article_text: str) -> Dict[str, Any]:
         """
-        Invokes Gemini fact-checking model to verify news article veracity.
+        Invokes Gemini model to verify news article veracity.
         """
         if not self.is_configured():
+            logger.info("Gemini verification skipped: API client not configured.")
             return {
                 "triggered": False,
-                "status": "Skipped",
+                "status": GEMINI_STATUS_SKIPPED,
                 "reason": "Gemini API key not configured in environment.",
                 "confidence": "N/A",
                 "raw_response": ""
@@ -63,16 +71,17 @@ Confidence: <0-100>%
 """
 
         try:
-            logger.info("Calling Gemini API for secondary fact-checking verification...")
+            logger.info("Executing Gemini API fact-checking call...")
             response = self.client.models.generate_content(
                 model="gemini-flash-latest",
                 contents=prompt
             )
-            
+
             raw_text = response.text.strip() if response and response.text else "No response returned."
-            
+            logger.info(f"Gemini API returned response length: {len(raw_text)}")
+
             # Parse structured response
-            status = "Unverified"
+            status = GEMINI_STATUS_UNVERIFIED
             reason = raw_text
             confidence = "N/A"
 
@@ -96,7 +105,7 @@ Confidence: <0-100>%
             logger.error(f"Gemini API verification error: {e}", exc_info=True)
             return {
                 "triggered": True,
-                "status": "Error",
+                "status": GEMINI_STATUS_ERROR,
                 "reason": f"Gemini API Error: {str(e)}",
                 "confidence": "N/A",
                 "raw_response": ""

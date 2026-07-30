@@ -1,147 +1,126 @@
-# 📰 Smart Fake News Identifier
+# 📰 Smart Fake News Identifier - Production Flask Architecture
 
-An enterprise-grade, multi-stage **Fake News & AI-Generated Content Detection** system combining **Transformer Deep Learning models (RoBERTa / DeBERTa)**, **TF-IDF ML Ensembles**, and **Google Gemini API Automated Secondary Fact-Checking**.
-
-Designed with **Clean Architecture**, **Input Sanitization**, **Centralized Preprocessing**, and **Configurable Verification Thresholds** to maximize real-world prediction accuracy without making false claims of 100% accuracy.
+An enterprise-grade **Fake News & AI-Generated Content Detection System** refactored into a production-ready Flask application architecture with **Transformer Deep Learning (RoBERTa / DeBERTa)**, **TF-IDF ML Ensembles**, and **Google Gemini API Automated Secondary Fact Verification**.
 
 ---
 
-## 🌟 Key Features
+## 📁 Blueprint Folder Structure
 
-1. **Multi-Model Intelligence**:
-   - **Transformer Pipeline**: Evaluates fine-tuned sequence classification models (`RoBERTa` / `DeBERTa`) for deep semantic context and self-attention feature extraction.
-   - **TF-IDF + Scikit-Learn Ensemble**: Dual-stage classifier detecting both **AI-generated text** vs **Human-written text** and **Fake News** vs **Real News**.
-   - **Automatic Model Selection**: Dynamically routes requests to the highest-performing operational model.
-
-2. **Automated Secondary Verification (Gemini API)**:
-   - When primary model prediction confidence drops below a configurable threshold (e.g. **< 90%**) or when AI-generated text is detected, the system **automatically triggers real-world fact verification** using the Google Gemini API.
-
-3. **Centralized & Robust Preprocessing**:
-   - Strips & unescapes HTML tags, sanitizes URLs/emails, strips non-text emojis, normalizes whitespace, and handles punctuation cleanly without corrupting context.
-
-4. **Production Security & Clean Architecture**:
-   - **Input Validation**: Rejects payload sizes over limit, enforces min/max word counts, and filters XSS/Script injection.
-   - **Environment Security**: All secrets and API keys are managed securely via `.env`.
-   - **Structured Logging**: Application-wide logging formatted with console and file output (`app.log`).
-
-5. **Modern Glassmorphic UI & REST API**:
-   - Dynamic web interface displaying prediction labels, confidence progress bars, analysis explanations, model type badges, and secondary fact-checking cards.
-   - Includes JSON REST API endpoints (`/api/predict`) and system health checks (`/health`).
-
----
-
-## 📂 Project Architecture
-
-```
+```text
 Smart-Fake-News-Identifier/
-├── app.py                      # Main Flask Web Application & REST API entrypoint
-├── config.py                   # Central configuration & environment variables
-├── requirements.txt            # Python dependencies
-├── .env.example                # Template for environment variables
-├── .gitignore                  # Exclusion rules for git
-├── README.md                   # Complete system documentation
-├── services/
+│
+├── app.py                      # Application Factory & Global Error Handlers
+├── config.py                   # Centralized Configuration loading from .env
+├── requirements.txt            # Package Dependencies
+├── README.md                   # Complete Documentation
+├── .env.example                # Sample Environment Variables
+├── .gitignore                  # Git Exclusion Rules
+│
+├── models/                     # ML / DL Models & Predictor Wrappers
+│   ├── model.pkl
+│   ├── vectorizer.pkl
+│   ├── ai_model.pkl
+│   ├── ai_vectorizer.pkl
+│   ├── base_model.py
+│   ├── sklearn_model.py
+│   └── transformer_model.py
+│
+├── services/                   # Modular Business Logic Layer
 │   ├── __init__.py
-│   ├── predictor_service.py    # Main orchestrator (Model selection & thresholding)
-│   ├── gemini_service.py       # Google Gemini API fact-checking verification service
-│   └── news_fetcher_service.py # Live news fetcher (MediaStack API)
-├── utils/
+│   ├── prediction_service.py   # Primary Prediction Orchestrator & Model Manager
+│   ├── gemini_service.py      # Google Gemini API Fact-Checking Integration
+│   ├── factcheck_service.py   # Secondary Fact-Checking Pipeline
+│   └── preprocessing_service.py # Centralized Text Preprocessing Service
+│
+├── routes/                     # Presentation / HTTP Routing Layer (Blueprint)
 │   ├── __init__.py
-│   ├── preprocessor.py         # Centralized text cleaning (HTML, URLs, emojis, whitespace)
-│   ├── logger.py               # Structured application logger
-│   └── validator.py            # Input validation, sanitization, & payload limit rules
-├── models/
+│   └── main_routes.py         # Presentation endpoints (Zero business logic in routes)
+│
+├── utils/                      # Application Utilities & Helpers
 │   ├── __init__.py
-│   ├── base_model.py           # Abstract Base Model interface
-│   ├── transformer_model.py    # RoBERTa / DeBERTa sequence classification pipeline
-│   ├── sklearn_model.py        # TF-IDF + Scikit-Learn classifier wrapper
-│   ├── ai_model.pkl            # Pre-trained AI vs Human classifier
-│   ├── ai_vectorizer.pkl       # Pre-trained AI TF-IDF vectorizer
-│   ├── model.pkl               # Pre-trained Fake vs Real classifier
-│   └── vectorizer.pkl          # Pre-trained Fake/Real TF-IDF vectorizer
-├── templates/
-│   └── index.html              # Modern glassmorphism UI template
-└── static/
-    ├── css/
-    │   └── style.css           # Modern CSS styling, themes, & responsive layouts
-    └── images/
-        ├── image.jpeg
-        └── images.jpeg
+│   ├── logger.py              # Logging setup writing to logs/app.log
+│   ├── validators.py          # Request validation & sanitization
+│   ├── helpers.py             # Response formatting & helper functions
+│   └── constants.py           # Constants, status codes, & prediction labels
+│
+├── templates/                  # HTML Templates
+│   └── index.html             # Glassmorphic UI layout
+├── static/                     # Static CSS & Images
+│   ├── css/style.css
+│   └── images/
+├── logs/                       # Application Logs
+│   └── app.log
+└── tests/                      # Automated Unit & Integration Tests
+    ├── __init__.py
+    └── test_services.py
 ```
 
 ---
 
-## ⚙️ Setup & Installation
+## ⚙️ Configuration & Environment Variables
 
-### 1. Prerequisites
-- Python 3.9+
-- Recommended: Virtual environment (`venv`)
+All configurable settings are stored in `config.py` and `.env`.
 
-### 2. Install Dependencies
-```bash
-git clone https://github.com/bellamkondapavani06/Smart-Fake-News-Identifier.git
-cd Smart-Fake-News-Identifier
-
-# Create & activate virtual environment
-python -m venv venv
-# On Windows:
-venv\Scripts\activate
-# On Linux/macOS:
-source venv/bin/activate
-
-# Install required packages
-pip install -r requirements.txt
-```
-
-### 3. Environment Configuration
-Copy `.env.example` to `.env` and fill in your API keys:
-
+Copy `.env.example` to `.env`:
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env`:
+Example `.env` settings:
 ```env
-FLASK_SECRET_KEY=your_custom_secret_key
-FLASK_DEBUG=True
+FLASK_SECRET_KEY=production-secret-key-change-me
+DEBUG=False
 PORT=5000
 HOST=127.0.0.1
+MAX_CONTENT_LENGTH=10485760
 
-GEMINI_API_KEY=your_actual_google_gemini_api_key
+GEMINI_API_KEY=your_gemini_api_key_here
 GEMINI_CONFIDENCE_THRESHOLD=90.0
 DEFAULT_MODEL_MODE=AUTO
+
+LOG_LEVEL=INFO
 ```
 
 ---
 
-## 🚀 Running the Application
+## 🚀 Installation & How to Run
 
-### Launch Web Server
+### 1. Install Dependencies
+```bash
+python -m venv venv
+# Windows:
+venv\Scripts\activate
+# Linux/macOS:
+source venv/bin/activate
+
+pip install -r requirements.txt
+```
+
+### 2. Run Application
 ```bash
 python app.py
 ```
-Open your browser and navigate to `http://127.0.0.1:5000`.
+Open `http://127.0.0.1:5000` in your browser.
 
-### CLI Interface (Terminal Mode)
+### 3. Run Automated Tests
 ```bash
-python "Mini project/mainpredict.py"
+python -m unittest discover tests
 ```
 
 ---
 
 ## 📡 REST API Documentation
 
-### 1. Predict News Veracity
-- **Endpoint**: `POST /api/predict`
-- **Headers**: `Content-Type: application/json`
-- **Request Body**:
+### 1. Fake News Detection
+`POST /api/predict` (Headers: `Content-Type: application/json`)
 ```json
 {
-  "news": "BREAKING: Scientists discover water ice on Mars equator...",
+  "news": "BREAKING: NASA James Webb Telescope confirms discovery of liquid water on Mars equator...",
   "force_gemini": false
 }
 ```
-- **Response**:
+
+Response:
 ```json
 {
   "success": true,
@@ -164,36 +143,22 @@ python "Mini project/mainpredict.py"
 ```
 
 ### 2. Health Check
-- **Endpoint**: `GET /health`
-- **Response**:
-```json
-{
-  "status": "healthy",
-  "models": {
-    "sklearn": true,
-    "transformer": false
-  },
-  "gemini_configured": true
-}
-```
+`GET /health`
 
 ---
 
-## 📊 Model & Dataset Information
+## 🧠 Model Details
 
-- **Traditional ML Model**: Scikit-learn TF-IDF Vectorization paired with Logistic Regression & Passive Aggressive Classifiers trained on Fake/Real news datasets.
-- **Transformer Model**: Hugging Face Sequence Classification (RoBERTa / DeBERTa architecture) providing contextual representations.
-- **Secondary Fact-Checking**: Google Gemini 1.5 Flash (`gemini-flash-latest`) for real-world verification of ambiguous claims.
-
----
-
-## 🔒 Security & Privacy
-
-- No hardcoded API keys in source code.
-- XSS and Script Injection filtering built into `utils/validator.py`.
-- Strict request character and word count bounds.
+1. **Transformer Model (`TransformerPredictor`)**: Sequence classification model (`RoBERTa` / `DeBERTa`) analyzing contextual self-attention representations.
+2. **TF-IDF ML Ensemble (`SKLearnPredictor`)**: Dual-stage classifier predicting:
+   - **AI Generated** vs **Human Written**
+   - **Real News** vs **Fake News**
+3. **Secondary Fact-Checking (`GeminiService`)**: Automatically invoked when prediction confidence < 90% or when AI-generated text is detected.
 
 ---
 
-## 📜 License
-Distributed under the MIT License. See `LICENSE` for more information.
+## 🔮 Future Improvements
+
+- Add caching layer (Redis) for repeated URL / claim lookups.
+- Integrate multi-language news translation prior to classification.
+- Support batch news prediction API endpoints.

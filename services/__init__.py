@@ -1,5 +1,11 @@
-from .predictor_service import PredictorService
+from .prediction_service import PredictionService
 from .gemini_service import GeminiService
-from .news_fetcher_service import NewsFetcherService
+from .factcheck_service import FactCheckService
+from .preprocessing_service import PreprocessingService
 
-__all__ = ["PredictorService", "GeminiService", "NewsFetcherService"]
+__all__ = [
+    "PredictionService",
+    "GeminiService",
+    "FactCheckService",
+    "PreprocessingService"
+]
